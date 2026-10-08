@@ -1,0 +1,32 @@
+{
+  "pepper": {
+    "x": 267,
+    "y": 15,
+    "width": 208,
+    "height": 283
+  },
+  "ba": {
+    "x": 15,
+    "y": 52,
+    "width": 345,
+    "height": 242
+  },
+  "ala": {
+    "x": 385,
+    "y": 41,
+    "width": 387,
+    "height": 253
+  },
+  "express": {
+    "x": 113,
+    "y": 318,
+    "width": 542,
+    "height": 185
+  },
+  "swoosh": {
+    "x": 211,
+    "y": 454,
+    "width": 425,
+    "height": 79
+  }
+}
