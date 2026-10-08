@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textInverse,
   },
   secondaryText: {
-    color: '#78350F',
+    color: '#FFFFFF',
   },
   outlineText: {
     color: theme.colors.primary,

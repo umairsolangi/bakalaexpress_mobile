@@ -154,12 +154,13 @@ export const ListingItem: React.FC<ListingItemProps> = ({
             style={[styles.addButton, !canAdd && styles.addButtonDisabled]}
             onPress={handleAdd}
             disabled={!canAdd}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel={`Add ${listing.name} to cart`}
           >
             <Text
               style={[styles.addButtonText, !canAdd && styles.addButtonTextDisabled]}
             >
-              {isOutOfStock ? t('outOfStock') : `+ ${t('addToCart')}`}
+              {isOutOfStock ? '✕' : '+'}
             </Text>
           </TouchableOpacity>
         )}
@@ -225,27 +226,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addButton: {
-    minHeight: 44,
-    minWidth: 76,
-    paddingHorizontal: theme.spacing.md,
-    backgroundColor: theme.colors.primaryLight,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    borderRadius: theme.radius.full,
+    width: 36,
+    height: 36,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   addButtonDisabled: {
-    backgroundColor: theme.colors.cardMuted,
-    borderColor: theme.colors.border,
+    backgroundColor: '#E5E7EB',
   },
   addButtonText: {
-    fontSize: theme.fontSize.xs,
+    fontSize: 20,
     fontWeight: theme.fontWeight.bold,
-    color: theme.colors.primaryDark,
+    color: '#FFFFFF',
+    lineHeight: 22,
   },
   addButtonTextDisabled: {
-    color: theme.colors.textMuted,
+    color: '#9CA3AF',
+    fontSize: 14,
   },
   stepper: {
     flexDirection: 'row',

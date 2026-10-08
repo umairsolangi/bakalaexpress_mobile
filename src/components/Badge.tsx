@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
 import { theme } from '../theme';
 
-export type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+export type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'orange';
 
 export interface BadgeProps {
   label: string;
@@ -19,6 +19,8 @@ export const Badge: React.FC<BadgeProps> = ({
 }) => {
   const getContainerStyle = () => {
     switch (variant) {
+      case 'orange':
+        return styles.orangeBg;
       case 'success':
         return styles.successBg;
       case 'warning':
@@ -35,6 +37,8 @@ export const Badge: React.FC<BadgeProps> = ({
 
   const getTextStyle = () => {
     switch (variant) {
+      case 'orange':
+        return styles.orangeText;
       case 'success':
         return styles.successText;
       case 'warning':
@@ -66,6 +70,12 @@ const styles = StyleSheet.create({
   text: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.semibold,
+  },
+  orangeBg: {
+    backgroundColor: '#FFF3EC',
+  },
+  orangeText: {
+    color: '#FF6A1A',
   },
   successBg: {
     backgroundColor: theme.colors.successLight,

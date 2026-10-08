@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -10,
-    backgroundColor: theme.colors.error,
+    backgroundColor: theme.colors.secondary,
     borderRadius: 10,
     minWidth: 18,
     height: 18,

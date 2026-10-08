@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   Platform,
   Modal,
   ScrollView,
+  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,24 +18,55 @@ import { theme } from '../../src/theme';
 import { Config } from '../../src/config';
 import { BrandLogo } from '../../src/components/BrandLogo';
 
-const HERO_BAG_IMG = require('../../assets/images/welcome-hero-bag-feathered.png');
-const SKYLINE_BG_IMG = require('../../assets/images/welcome-skyline-clean.png');
-const IC_FRESH = require('../../assets/images/welcome-ic-fresh.png');
-const IC_STORES = require('../../assets/images/welcome-ic-stores.png');
-const IC_DELIVERY = require('../../assets/images/welcome-ic-delivery.png');
+const RIDER_3D_IMG = require('../../assets/images/welcome-rider-3d.jpg');
+const GROCERY_BAG_3D_IMG = require('../../assets/images/welcome-grocery-bag-3d.jpg');
 const IC_PIN = require('../../assets/images/welcome-ic-pin.png');
+
+interface SlideData {
+  id: string;
+  image: any;
+  title: string;
+  subtitle: string;
+  tag: string;
+}
+
+const SLIDES: SlideData[] = [
+  {
+    id: 'slide-1',
+    image: RIDER_3D_IMG,
+    title: 'Fast Delivery, Fresh Groceries',
+    subtitle: 'Get your groceries delivered quickly and fresh, right to your doorstep.',
+    tag: '⚡ 20-30 Min Delivery',
+  },
+  {
+    id: 'slide-2',
+    image: GROCERY_BAG_3D_IMG,
+    title: 'Everything You Need',
+    subtitle: 'Get your groceries delivered fresh and safely, straight to your doorstep.',
+    tag: '🌿 100% Fresh & Authentic',
+  },
+];
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const setGuest = useAuthStore((s) => s.setGuest);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  // Partner selection modal state (Shop / Rider)
+  const [activeSlide, setActiveSlide] = useState(0);
   const [partnerModalVisible, setPartnerModalVisible] = useState(false);
   const [partnerType, setPartnerType] = useState<'seller' | 'rider'>('seller');
+  const [authChoiceVisible, setAuthChoiceVisible] = useState(false);
 
   const isCompactScreen = screenHeight < 720;
   const isTallScreen = screenHeight > 820;
+
+  // Auto-advance slides every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev === 0 ? 1 : 0));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleGuest = () => {
     setGuest(true);
@@ -46,23 +78,21 @@ export default function WelcomeScreen() {
     setPartnerModalVisible(true);
   };
 
+  const currentSlide = SLIDES[activeSlide];
+
+  const imageSize = Math.min(
+    Math.round(screenWidth * 0.76),
+    isCompactScreen ? 230 : isTallScreen ? 310 : 270
+  );
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      {/* Background Karachi landmark & green waves watermark at bottom */}
-      <View style={styles.backgroundDecorativeWrap} pointerEvents="none">
-        <Image
-          source={SKYLINE_BG_IMG}
-          style={styles.skylineBackground}
-          contentFit="cover"
-        />
-      </View>
-
       <View style={styles.container}>
         {/* ============================================================== */}
-        {/* Top Header Navigation Bar                                      */}
+        {/* Top Header Bar                                                 */}
         {/* ============================================================== */}
         <View style={styles.headerBar}>
-          {/* Location Pill (Baldia Town, Karachi) */}
+          {/* Location Chip */}
           <TouchableOpacity
             style={styles.locationPill}
             activeOpacity={0.8}
@@ -74,7 +104,7 @@ export default function WelcomeScreen() {
             <Text style={styles.chevronIcon}>⌄</Text>
           </TouchableOpacity>
 
-          {/* Partners Pill Dropdown */}
+          {/* Partner Portal Pill */}
           <TouchableOpacity
             style={styles.partnersPill}
             onPress={() => openPartnerPortal('seller')}
@@ -89,141 +119,98 @@ export default function WelcomeScreen() {
         </View>
 
         {/* ============================================================== */}
-        {/* Hero Section (Left copy & Badges + Right Grocery Visual)       */}
+        {/* Hero Illustration & Carousel Copy                             */}
         {/* ============================================================== */}
-        <View style={[styles.heroContainer, isCompactScreen && styles.heroContainerCompact]}>
-          {/* Right Floating Visual: Tote bag with vegetables, bread, milk & arch */}
+        <View style={styles.heroSection}>
+          {/* 3D Visual Illustration with smooth rounded container */}
           <View
             style={[
-              styles.heroVisualWrap,
-              {
-                width: Math.min(Math.round(screenWidth * 0.52), 240),
-                height: isCompactScreen ? 270 : isTallScreen ? 340 : 310,
-              },
+              styles.imageContainer,
+              { width: imageSize, height: imageSize },
             ]}
-            pointerEvents="none"
           >
             <Image
-              source={HERO_BAG_IMG}
-              style={styles.heroVisualImage}
+              source={currentSlide.image}
+              style={styles.heroImage}
               contentFit="contain"
-              contentPosition="right bottom"
+              transition={350}
             />
           </View>
 
-          {/* Left Hero Content Area */}
-          <View style={styles.heroLeftContent}>
-            {/* Brand Logo */}
-            <View style={styles.logoWrap}>
-              <BrandLogo
-                variant="full"
-                width={isCompactScreen ? 148 : 172}
-              />
-            </View>
+          {/* Feature Badge Tag */}
+          <View style={styles.featureBadge}>
+            <Text style={styles.featureBadgeText}>{currentSlide.tag}</Text>
+          </View>
 
-            {/* Headline */}
-            <View style={styles.headlineWrap}>
-              <Text style={[styles.headlineDark, isCompactScreen && styles.headlineDarkCompact]}>
-                Your Local Store,
-              </Text>
-              <Text style={[styles.headlineGreen, isCompactScreen && styles.headlineGreenCompact]}>
-                Delivered Fast
-              </Text>
-            </View>
-
-            {/* Subtitle */}
+          {/* Headline & Subtitle */}
+          <View style={styles.textContainer}>
+            <Text
+              style={[
+                styles.titleText,
+                isCompactScreen && styles.titleTextCompact,
+              ]}
+            >
+              {currentSlide.title}
+            </Text>
             <Text
               style={[
                 styles.subtitleText,
                 isCompactScreen && styles.subtitleTextCompact,
               ]}
-              numberOfLines={4}
             >
-              Fresh groceries, fruits, dairy &amp; daily essentials from your nearby shops — at your doorstep.
+              {currentSlide.subtitle}
             </Text>
+          </View>
 
-            {/* 3 Value Badges: 100% Fresh | Local Stores | Fast Delivery */}
-            <View style={styles.badgesRow}>
-              {/* Badge 1: 100% Fresh */}
-              <View style={styles.badgeItem}>
-                <Image source={IC_FRESH} style={styles.badgeSquircleIcon} contentFit="contain" />
-                <Text style={styles.badgeTitle}>100%</Text>
-                <Text style={styles.badgeSubtitle}>Fresh</Text>
-              </View>
-
-              <View style={styles.badgeDivider} />
-
-              {/* Badge 2: Local Stores */}
-              <View style={styles.badgeItem}>
-                <Image source={IC_STORES} style={styles.badgeSquircleIcon} contentFit="contain" />
-                <Text style={styles.badgeTitle}>Local</Text>
-                <Text style={styles.badgeSubtitle}>Stores</Text>
-              </View>
-
-              <View style={styles.badgeDivider} />
-
-              {/* Badge 3: Fast Delivery */}
-              <View style={styles.badgeItem}>
-                <Image source={IC_DELIVERY} style={styles.badgeSquircleIcon} contentFit="contain" />
-                <Text style={styles.badgeTitle}>Fast</Text>
-                <Text style={styles.badgeSubtitle}>Delivery</Text>
-              </View>
-            </View>
+          {/* Carousel Pagination Capsule Indicators */}
+          <View style={styles.paginationRow}>
+            {SLIDES.map((slide, index) => {
+              const isActive = index === activeSlide;
+              return (
+                <TouchableOpacity
+                  key={slide.id}
+                  onPress={() => setActiveSlide(index)}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+                  style={[
+                    styles.paginationDot,
+                    isActive ? styles.paginationActiveCapsule : styles.paginationInactiveDot,
+                  ]}
+                />
+              );
+            })}
           </View>
         </View>
 
         {/* ============================================================== */}
-        {/* Action Buttons Section (3 Full Width Capsules)                 */}
+        {/* Action Buttons (Matches Behance Layout)                       */}
         {/* ============================================================== */}
-        <View style={styles.actionButtonsSection}>
-          {/* 1. Primary Action: Sign In to Order */}
+        <View style={styles.actionsSection}>
+          {/* 1. Primary Solid Green Action */}
           <TouchableOpacity
-            style={styles.primarySignInBtn}
-            onPress={() =>
-              router.push({
-                pathname: '/(auth)/login' as any,
-                params: { role: 'customer' },
-              })
-            }
+            style={styles.primaryBtn}
+            onPress={() => setAuthChoiceVisible(true)}
             activeOpacity={0.88}
             accessibilityRole="button"
-            accessibilityLabel="Sign In to Order"
+            accessibilityLabel="Log in or Sign up"
           >
-            <Text style={styles.primarySignInText}>Sign In to Order</Text>
-            <View style={styles.primaryArrowCircle}>
-              <Text style={styles.primaryArrowText}>→</Text>
-            </View>
+            <Text style={styles.primaryBtnText}>Log in or Sign up</Text>
           </TouchableOpacity>
 
-          {/* 2. Secondary Action: New Customer? Create Account */}
+          {/* 2. Secondary Outlined Action */}
           <TouchableOpacity
-            style={styles.secondaryRegisterBtn}
-            onPress={() => router.push('/(auth)/register' as any)}
+            style={styles.secondaryBtn}
+            onPress={handleGuest}
             activeOpacity={0.84}
             accessibilityRole="button"
-            accessibilityLabel="New Customer? Create Account"
+            accessibilityLabel="Explore Bakala Express"
           >
-            <Text style={styles.secondaryRegisterText}>
-              New Customer? Create Account
-            </Text>
-            <Text style={styles.secondaryArrowText}>→</Text>
-          </TouchableOpacity>
-
-          {/* 3. Guest Action: Explore Products as Guest */}
-          <TouchableOpacity
-            style={styles.guestExploreBtn}
-            onPress={handleGuest}
-            activeOpacity={0.82}
-            accessibilityRole="button"
-            accessibilityLabel="Explore Products as Guest"
-          >
-            <Text style={styles.guestLeafIcon}>🌿</Text>
-            <Text style={styles.guestExploreText}>Explore Products as Guest</Text>
+            <Text style={styles.secondaryBtnText}>Explore Bakala Express</Text>
           </TouchableOpacity>
         </View>
 
         {/* ============================================================== */}
-        {/* Footer Links: Partner with us & Admin Portal                   */}
+        {/* Footer Links: Partner With Us & Admin Portal                   */}
         {/* ============================================================== */}
         <View style={styles.footerSection}>
           <View style={styles.partnerRow}>
@@ -271,6 +258,75 @@ export default function WelcomeScreen() {
       </View>
 
       {/* ============================================================== */}
+      {/* Quick Auth Choice Modal (Log In / Create Account)              */}
+      {/* ============================================================== */}
+      <Modal
+        visible={authChoiceVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setAuthChoiceVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => setAuthChoiceVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalCard}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalDragHandle} />
+
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Welcome to Bakala Express</Text>
+                <Text style={styles.modalSubtitle}>
+                  Order fresh groceries directly from neighborhood shops
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setAuthChoiceVisible(false)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.modalCloseIcon}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.authChoicesWrap}>
+              <TouchableOpacity
+                style={styles.authChoicePrimaryBtn}
+                onPress={() => {
+                  setAuthChoiceVisible(false);
+                  router.push({
+                    pathname: '/(auth)/login' as any,
+                    params: { role: 'customer' },
+                  });
+                }}
+                activeOpacity={0.88}
+              >
+                <Text style={styles.authChoicePrimaryText}>Sign In with Email</Text>
+                <Text style={styles.choiceArrow}>→</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.authChoiceSecondaryBtn}
+                onPress={() => {
+                  setAuthChoiceVisible(false);
+                  router.push('/(auth)/register' as any);
+                }}
+                activeOpacity={0.84}
+              >
+                <Text style={styles.authChoiceSecondaryText}>Create New Account</Text>
+                <Text style={styles.choiceArrowSecondary}>→</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* ============================================================== */}
       {/* Partner Access Bottom Sheet Modal                              */}
       {/* ============================================================== */}
       <Modal
@@ -289,10 +345,8 @@ export default function WelcomeScreen() {
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
           >
-            {/* Modal Drag Indicator */}
             <View style={styles.modalDragHandle} />
 
-            {/* Modal Title & Close */}
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>Partner Portal</Text>
@@ -381,9 +435,9 @@ export default function WelcomeScreen() {
               </View>
             ) : (
               <View style={styles.modalRoleContent}>
-                <View style={[styles.modalRoleInfoCard, { borderColor: '#FDE68A', backgroundColor: '#FFFBEB' }]}>
-                  <Text style={[styles.modalRoleTitle, { color: '#92400E' }]}>Deliver Orders &amp; Earn Reliably</Text>
-                  <Text style={[styles.modalRoleDesc, { color: '#B45309' }]}>
+                <View style={[styles.modalRoleInfoCard, { borderColor: '#FED7AA', backgroundColor: '#FFF7ED' }]}>
+                  <Text style={[styles.modalRoleTitle, { color: '#C2410C' }]}>Deliver Orders &amp; Earn Reliably</Text>
+                  <Text style={[styles.modalRoleDesc, { color: '#EA580C' }]}>
                     Enjoy flexible working hours, local delivery routes in Baldia Town, and transparent weekly payouts.
                   </Text>
                 </View>
@@ -422,25 +476,13 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FAF7F1',
-  },
-  backgroundDecorativeWrap: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-    zIndex: 0,
-  },
-  skylineBackground: {
-    width: '100%',
-    height: '100%',
+    backgroundColor: '#FAFAFA',
   },
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     justifyContent: 'space-between',
-    zIndex: 1,
+    backgroundColor: '#FAFAFA',
   },
 
   // -------------------------------------------------------------
@@ -450,16 +492,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: Platform.OS === 'android' ? 6 : 2,
-    paddingBottom: 4,
+    paddingTop: Platform.OS === 'android' ? 10 : 6,
+    paddingBottom: 6,
   },
   locationPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EBF6EE',
+    backgroundColor: '#E8F5EE',
     borderWidth: 1,
-    borderColor: '#CBE5D2',
-    borderRadius: 22,
+    borderColor: '#C7E8D4',
+    borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 6,
     gap: 6,
@@ -469,15 +511,15 @@ const styles = StyleSheet.create({
     height: 16,
   },
   locationPillText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#0D3820',
+    color: '#157B42',
     letterSpacing: -0.2,
   },
   chevronIcon: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#0D3820',
+    color: '#157B42',
     marginTop: -2,
   },
   partnersPill: {
@@ -485,9 +527,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 22,
-    paddingHorizontal: 13,
+    borderColor: '#E5E7EB',
+    borderRadius: 20,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     gap: 5,
     ...Platform.select({
@@ -503,239 +545,176 @@ const styles = StyleSheet.create({
     }),
   },
   handshakeEmoji: {
-    fontSize: 14,
+    fontSize: 13,
   },
   partnersPillText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#1E293B',
+    color: '#1A1A1A',
   },
 
   // -------------------------------------------------------------
-  // Hero Container
+  // Hero Carousel Section
   // -------------------------------------------------------------
-  heroContainer: {
+  heroSection: {
     flex: 1,
-    position: 'relative',
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
   },
-  heroContainerCompact: {
-    paddingVertical: 2,
-  },
-  heroVisualWrap: {
-    position: 'absolute',
-    right: -16,
-    top: 8,
-    bottom: 4,
-    zIndex: 1,
-  },
-  heroVisualImage: {
-    width: '100%',
-    height: '100%',
-  },
-  heroLeftContent: {
-    width: '56%',
-    zIndex: 2,
-    alignItems: 'flex-start',
-  },
-  logoWrap: {
-    marginBottom: 12,
-    alignItems: 'flex-start',
-  },
-  headlineWrap: {
-    marginBottom: 8,
-  },
-  headlineDark: {
-    fontSize: 25,
-    lineHeight: 30,
-    fontWeight: '800',
-    color: '#111827',
-    letterSpacing: -0.5,
-  },
-  headlineDarkCompact: {
-    fontSize: 21,
-    lineHeight: 25,
-  },
-  headlineGreen: {
-    fontSize: 25,
-    lineHeight: 30,
-    fontWeight: '800',
-    color: '#128045',
-    letterSpacing: -0.5,
-  },
-  headlineGreenCompact: {
-    fontSize: 21,
-    lineHeight: 25,
-  },
-  subtitleText: {
-    fontSize: 12.5,
-    lineHeight: 18,
-    color: '#4B5563',
+  imageContainer: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
-    fontWeight: '400',
-  },
-  subtitleTextCompact: {
-    fontSize: 11.5,
-    lineHeight: 15.5,
-    marginBottom: 10,
-  },
-
-  // -------------------------------------------------------------
-  // Feature Badges
-  // -------------------------------------------------------------
-  badgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingRight: 4,
-  },
-  badgeItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  badgeSquircleIcon: {
-    width: 38,
-    height: 38,
-    marginBottom: 5,
-  },
-  badgeTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0F172A',
-    textAlign: 'center',
-    lineHeight: 13,
-  },
-  badgeSubtitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0F172A',
-    textAlign: 'center',
-    lineHeight: 13,
-  },
-  badgeDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: '#E2E8F0',
-    marginHorizontal: 3,
-  },
-
-  // -------------------------------------------------------------
-  // Action Buttons
-  // -------------------------------------------------------------
-  actionButtonsSection: {
-    width: '100%',
-    gap: 10,
-    paddingTop: 6,
-    paddingBottom: 2,
-    zIndex: 2,
-  },
-  primarySignInBtn: {
-    height: 54,
-    backgroundColor: '#104928',
-    borderRadius: 27,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    position: 'relative',
+    backgroundColor: '#FFFFFF',
     ...Platform.select({
       ios: {
-        shadowColor: '#104928',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.28,
-        shadowRadius: 8,
+        shadowColor: '#157B42',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.08,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
     }),
   },
-  primarySignInText: {
-    color: '#FFFFFF',
-    fontSize: 16.5,
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  featureBadge: {
+    backgroundColor: '#FFF3EC',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  featureBadgeText: {
+    fontSize: 12,
     fontWeight: '700',
-    marginRight: 10,
+    color: '#FF6A1A',
     letterSpacing: -0.2,
   },
-  primaryArrowCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#277947',
+  textContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 20,
   },
-  primaryArrowText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
+  titleText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    lineHeight: 30,
+    letterSpacing: -0.5,
+    marginBottom: 8,
+  },
+  titleTextCompact: {
+    fontSize: 20,
+    lineHeight: 25,
+  },
+  subtitleText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#575757',
+    textAlign: 'center',
+    maxWidth: 320,
+  },
+  subtitleTextCompact: {
+    fontSize: 12.5,
     lineHeight: 18,
   },
-  secondaryRegisterBtn: {
-    height: 50,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 25,
-    borderWidth: 1.5,
-    borderColor: '#104928',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    position: 'relative',
-  },
-  secondaryRegisterText: {
-    color: '#104928',
-    fontSize: 14.5,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  secondaryArrowText: {
-    position: 'absolute',
-    right: 20,
-    color: '#104928',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  guestExploreBtn: {
-    height: 48,
-    backgroundColor: '#EAF5EC',
-    borderRadius: 24,
+  paginationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
-  guestLeafIcon: {
-    fontSize: 16,
+  paginationDot: {
+    height: 6,
+    borderRadius: 3,
   },
-  guestExploreText: {
-    color: '#104928',
-    fontSize: 14.5,
+  paginationActiveCapsule: {
+    width: 32,
+    backgroundColor: '#157B42',
+  },
+  paginationInactiveDot: {
+    width: 8,
+    backgroundColor: '#D1D5DB',
+  },
+
+  // -------------------------------------------------------------
+  // Action Buttons
+  // -------------------------------------------------------------
+  actionsSection: {
+    width: '100%',
+    gap: 12,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  primaryBtn: {
+    height: 52,
+    backgroundColor: '#157B42',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#157B42',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.28,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  primaryBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  secondaryBtn: {
+    height: 52,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#157B42',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryBtnText: {
+    color: '#157B42',
+    fontSize: 15,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
 
   // -------------------------------------------------------------
-  // Footer
+  // Footer Links
   // -------------------------------------------------------------
   footerSection: {
     alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 6,
+    paddingTop: 10,
+    paddingBottom: 8,
     gap: 4,
-    zIndex: 2,
   },
   partnerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
+    gap: 6,
   },
   partnerPrefixText: {
     fontSize: 12,
-    color: '#64748B',
+    color: '#6B7280',
     fontWeight: '400',
   },
   partnerLinkTouch: {
@@ -750,13 +729,13 @@ const styles = StyleSheet.create({
   partnerLinkText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#104928',
+    color: '#157B42',
     textDecorationLine: 'underline',
   },
   partnerPipe: {
     fontSize: 12,
     color: '#CBD5E1',
-    marginHorizontal: 3,
+    marginHorizontal: 2,
   },
   adminTouch: {
     paddingVertical: 2,
@@ -764,12 +743,12 @@ const styles = StyleSheet.create({
   },
   adminText: {
     fontSize: 11.5,
-    color: '#64748B',
+    color: '#6B7280',
     fontWeight: '500',
   },
 
   // -------------------------------------------------------------
-  // Partner Modal Styles
+  // Modals
   // -------------------------------------------------------------
   modalBackdrop: {
     flex: 1,
@@ -799,7 +778,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 5,
     borderRadius: 3,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#E5E7EB',
     alignSelf: 'center',
     marginBottom: 16,
   },
@@ -807,17 +786,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 18,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: theme.fontWeight.bold,
-    color: '#0F172A',
+    fontWeight: '800',
+    color: '#1A1A1A',
     marginBottom: 2,
   },
   modalSubtitle: {
     fontSize: 12,
-    color: '#64748B',
+    color: '#575757',
     maxWidth: 270,
     lineHeight: 16,
   },
@@ -825,18 +804,63 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalCloseIcon: {
     fontSize: 14,
-    color: '#64748B',
+    color: '#6B7280',
     fontWeight: 'bold',
+  },
+  authChoicesWrap: {
+    gap: 12,
+    marginTop: 6,
+    marginBottom: 8,
+  },
+  authChoicePrimaryBtn: {
+    height: 50,
+    backgroundColor: '#157B42',
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+  authChoicePrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  choiceArrow: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  authChoiceSecondaryBtn: {
+    height: 50,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#157B42',
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+  authChoiceSecondaryText: {
+    color: '#157B42',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  choiceArrowSecondary: {
+    color: '#157B42',
+    fontSize: 18,
+    fontWeight: '700',
   },
   modalTabRow: {
     flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F3F4F6',
     borderRadius: 12,
     padding: 4,
     marginBottom: 16,
@@ -863,33 +887,33 @@ const styles = StyleSheet.create({
   },
   modalTabText: {
     fontSize: 13,
-    fontWeight: theme.fontWeight.semibold,
-    color: '#64748B',
+    fontWeight: '600',
+    color: '#6B7280',
   },
   modalTabTextActive: {
-    color: '#0F172A',
-    fontWeight: theme.fontWeight.bold,
+    color: '#1A1A1A',
+    fontWeight: '700',
   },
   modalRoleContent: {
     gap: 10,
   },
   modalRoleInfoCard: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: '#E8F5EE',
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: '#C7E8D4',
     borderRadius: 14,
     padding: 14,
     marginBottom: 4,
   },
   modalRoleTitle: {
     fontSize: 14,
-    fontWeight: theme.fontWeight.bold,
-    color: '#166534',
+    fontWeight: '700',
+    color: '#157B42',
     marginBottom: 4,
   },
   modalRoleDesc: {
     fontSize: 12,
-    color: '#15803D',
+    color: '#0D582E',
     lineHeight: 17,
   },
   modalActionBtn: {
@@ -899,21 +923,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalPrimaryBtn: {
-    backgroundColor: '#104928',
+    backgroundColor: '#157B42',
   },
   modalPrimaryBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: theme.fontWeight.bold,
+    fontWeight: '700',
   },
   modalSecondaryBtn: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    borderColor: '#E5E7EB',
   },
   modalSecondaryBtnText: {
-    color: '#334155',
+    color: '#374151',
     fontSize: 14,
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: '600',
   },
 });

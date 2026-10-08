@@ -3,51 +3,51 @@ import { brand } from './theme/brand';
 export const theme = {
   colors: {
     // Brand Core Tokens
-    /** Primary button and main action color - Accessible dark green from contrast table (7.99:1 on white text) */
-    primary: brand.greenDark, // #005E25
+    /** Primary button and main action color - Accessible emerald green from Behance reference (#157B42) */
+    primary: brand.greenDark, // #157B42
     /** Backwards-compatible alias for primaryDark */
     primaryDark: brand.greenDark,
     /** Pressed state for primary buttons */
-    primaryPressed: '#00481C',
-    /** Brand vibrant green accent (pepper fill) for icons, chips, and highlights */
-    primaryAccent: brand.green, // #009225
-    /** Secondary warm accent */
-    secondary: '#F59E0B',
-    secondaryLight: '#FEF3C7',
+    primaryPressed: '#0E5B30',
+    /** Brand vibrant green accent for icons, chips, and highlights */
+    primaryAccent: brand.green, // #157B42
+    /** Secondary warm orange accent for badges, sales, discounts (#FF6A1A) */
+    secondary: brand.orange, // #FF6A1A
+    secondaryLight: '#FFF3EC',
     /** Accessible on-primary text/icon color */
     onPrimary: '#FFFFFF',
-    /** Main background canvas */
-    background: '#FFFFFF',
+    /** Main background canvas (#FAFAFA) */
+    background: brand.background,
     /** Surface/card color */
     surface: '#FFFFFF',
-    surfaceSubtle: '#F9FAFB',
+    surfaceSubtle: '#F8F9FA',
     /** Clean 1dp border color */
-    border: '#E5E5E5',
+    border: '#EBEBEB',
     borderFocus: brand.greenDark,
     borderError: '#EF4444',
-    /** Typography primary black */
-    text: brand.black, // #000000
+    /** Typography primary black (#1A1A1A) */
+    text: brand.black, // #1A1A1A
     textPrimary: brand.black,
-    /** Muted secondary typography */
-    mutedText: brand.muted, // #6B6B6B
+    /** Muted secondary typography (#575757) */
+    mutedText: brand.muted, // #575757
     textSecondary: brand.muted,
     textMuted: brand.muted,
     textInverse: '#FFFFFF',
     /** Semantic feedback tokens */
     success: brand.green,
-    successLight: '#DCFCE7',
+    successLight: '#E8F5EE',
     warning: '#F59E0B',
     warningLight: '#FEF3C7',
     danger: '#EF4444',
     dangerLight: '#FEE2E2',
     error: '#EF4444',
     errorLight: '#FEE2E2',
-    disabled: '#E5E5E5',
-    disabledText: brand.muted,
+    disabled: '#E5E7EB',
+    disabledText: '#9CA3AF',
     overlay: 'rgba(0, 0, 0, 0.6)',
     card: '#FFFFFF',
-    cardMuted: '#F9FAFB',
-    primaryLight: '#E8F8F0',
+    cardMuted: '#F8F9FA',
+    primaryLight: '#E8F5EE',
     primaryMuted: brand.green,
   },
   spacing: {

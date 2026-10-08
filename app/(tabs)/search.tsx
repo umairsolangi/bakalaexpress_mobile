@@ -6,10 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
+  ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { searchCatalog } from '../../src/api/browse';
+import { searchCatalog, getLocationsMeta } from '../../src/api/browse';
 import {
   CustomerShopCard,
   SearchAllResponse,
@@ -29,6 +31,28 @@ import { theme } from '../../src/theme';
 import { t } from '../../src/i18n';
 
 type SearchType = 'all' | 'shops' | 'products';
+
+const TRENDING_SEARCHES = [
+  'Eggs',
+  'Milk',
+  'Tomatoes',
+  'Yogurt',
+  'Bananas',
+  'Bread',
+  'Chicken',
+  'Cooking Oil',
+  'Rice',
+  'Potatoes',
+];
+
+const SEARCH_CATEGORIES = [
+  { id: 1, name: 'Dairy & Eggs', icon: '🥛' },
+  { id: 2, name: 'Vegetables', icon: '🥦' },
+  { id: 3, name: 'Drinks', icon: '🧃' },
+  { id: 4, name: 'Meat', icon: '🥩' },
+  { id: 5, name: 'Grocery', icon: '🛒' },
+  { id: 6, name: 'Snacks', icon: '🍫' },
+];
 
 export default function SearchScreen() {
   const sector = useLocationStore((s) => s.sector);
@@ -76,12 +100,21 @@ export default function SearchScreen() {
     <Screen style={styles.container}>
       {/* Search Header */}
       <View style={styles.header}>
+        {/* Free Delivery Banner (Matches Image 2 Right Phone) */}
+        <View style={styles.freeDeliveryPill}>
+          <Text style={styles.freeDeliveryIcon}>🛵</Text>
+          <Text style={styles.freeDeliveryText}>
+            Free delivery on your first order in Baldia Town!
+          </Text>
+        </View>
+
+        {/* Input Bar */}
         <View style={styles.searchBar}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder={t('searchPlaceholder')}
-            placeholderTextColor={theme.colors.textMuted}
+            placeholder="Search products, brands, or categories..."
+            placeholderTextColor="#9CA3AF"
             value={searchTerm}
             onChangeText={setSearchTerm}
             autoCapitalize="none"
@@ -98,7 +131,7 @@ export default function SearchScreen() {
           ) : null}
         </View>
 
-        {/* Type Switch Pills */}
+        {/* Filter Pills */}
         <View style={styles.typePillsRow}>
           {(['all', 'shops', 'products'] as SearchType[]).map((type) => {
             const isSelected = searchType === type;
@@ -114,7 +147,7 @@ export default function SearchScreen() {
                 key={type}
                 style={[styles.typePill, isSelected && styles.typePillActive]}
                 onPress={() => setSearchType(type)}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
                 <Text
                   style={[
@@ -132,10 +165,53 @@ export default function SearchScreen() {
 
       {/* Content Area */}
       {!hasMinChars ? (
-        <View style={styles.promptContainer}>
-          <Text style={styles.promptIcon}>⌨️</Text>
-          <Text style={styles.promptText}>{t('searchMinChars')}</Text>
-        </View>
+        <ScrollView
+          style={styles.preSearchScroll}
+          contentContainerStyle={styles.preSearchContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Categories Showcase (Matching Behance) */}
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesScroll}
+          >
+            {SEARCH_CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={styles.categoryCard}
+                onPress={() => setSearchTerm(cat.name)}
+                activeOpacity={0.75}
+              >
+                <View style={styles.categoryIconWrap}>
+                  <Text style={styles.categoryEmoji}>{cat.icon}</Text>
+                </View>
+                <Text style={styles.categoryName}>{cat.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* Trending Searches (Matching Behance) */}
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Trending Searches</Text>
+          </View>
+          <View style={styles.trendingChipsWrap}>
+            {TRENDING_SEARCHES.map((item) => (
+              <TouchableOpacity
+                key={item}
+                style={styles.trendingChip}
+                onPress={() => setSearchTerm(item)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.trendingChipIcon}>🔍</Text>
+                <Text style={styles.trendingChipText}>{item}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
       ) : isLoading || (isFetching && !data) ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -215,105 +291,215 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFAFA',
   },
   header: {
-    backgroundColor: theme.colors.card,
-    paddingHorizontal: theme.spacing.screen,
-    paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.sm,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? 10 : 8,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    borderBottomColor: '#EBEBEB',
+    gap: 8,
+  },
+  freeDeliveryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    alignSelf: 'flex-start',
+  },
+  freeDeliveryIcon: {
+    fontSize: 13,
+  },
+  freeDeliveryText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#157B42',
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.cardMuted,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.md,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 14,
+    paddingHorizontal: 14,
     minHeight: 46,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: '#EBEBEB',
   },
   searchIcon: {
-    fontSize: 16,
-    marginRight: theme.spacing.sm,
+    fontSize: 15,
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text,
+    fontSize: 14,
+    color: '#1A1A1A',
     paddingVertical: 8,
   },
   clearIcon: {
-    fontSize: 16,
-    color: theme.colors.textMuted,
+    fontSize: 15,
+    color: '#9CA3AF',
     padding: 4,
   },
   typePillsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.md,
-    marginBottom: 4,
+    gap: 8,
+    marginTop: 2,
   },
   typePill: {
     flex: 1,
-    minHeight: 38,
-    borderRadius: theme.radius.full,
+    minHeight: 36,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: '#EBEBEB',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.cardMuted,
+    backgroundColor: '#F8F9FA',
   },
   typePillActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
+    backgroundColor: '#157B42',
+    borderColor: '#157B42',
   },
   typePillText: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#575757',
   },
   typePillTextActive: {
-    color: theme.colors.textInverse,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
-  promptContainer: {
+
+  // Pre-search state
+  preSearchScroll: {
     flex: 1,
+  },
+  preSearchContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 90,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    marginTop: 4,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    letterSpacing: -0.3,
+  },
+  categoriesScroll: {
+    gap: 10,
+    paddingBottom: 18,
+  },
+  categoryCard: {
+    width: 76,
+    height: 82,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#EBEBEB',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: theme.spacing.xl,
-    gap: theme.spacing.md,
+    padding: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
-  promptIcon: {
-    fontSize: 48,
+  categoryIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F8F9FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
-  promptText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
+  categoryEmoji: {
+    fontSize: 20,
+  },
+  categoryName: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#374151',
     textAlign: 'center',
   },
+  trendingChipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  trendingChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#EBEBEB',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.03,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  trendingChipIcon: {
+    fontSize: 12,
+  },
+  trendingChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+  },
+
+  // Loading & Results
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.md,
+    gap: 12,
   },
   loadingText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textSecondary,
+    fontSize: 13,
+    color: '#6B7280',
   },
   resultsContent: {
-    paddingHorizontal: theme.spacing.screen,
-    paddingTop: theme.spacing.md,
+    paddingHorizontal: 16,
+    paddingTop: 14,
     paddingBottom: 90,
   },
   sectionWrap: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 20,
   },
   sectionHeader: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 10,
+    letterSpacing: -0.3,
   },
 });
