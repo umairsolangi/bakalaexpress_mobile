@@ -19,7 +19,7 @@ function getInitialApiUrl(): string {
     }
   }
 
-  return envUrl || 'http://192.168.0.126:8000';
+  return envUrl || 'http://192.168.0.125:8000';
 }
 
 export const Config = {

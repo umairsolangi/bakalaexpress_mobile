@@ -9,7 +9,7 @@ export interface GuardParams {
 export function getRoleHome(role: UserRole): string {
   switch (role) {
     case 'customer':
-      return '/(customer)/(tabs)';
+      return '/(tabs)';
     case 'seller':
       return '/(seller)/home';
     case 'rider':

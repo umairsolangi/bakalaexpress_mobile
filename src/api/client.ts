@@ -81,7 +81,7 @@ export async function clearStoredToken(): Promise<void> {
 export function getApiBaseUrl(): string {
   const rawUrl = Config.apiBaseUrl && Config.apiBaseUrl.trim()
     ? Config.apiBaseUrl.trim()
-    : 'http://192.168.0.126:8000';
+    : 'http://192.168.0.125:8000';
   // Strip trailing slashes
   const baseUrl = rawUrl.replace(/\/+$/, '');
   return `${baseUrl}/api/v1`;

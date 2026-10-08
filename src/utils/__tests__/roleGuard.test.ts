@@ -11,7 +11,7 @@ import {
 describe('roleGuard pure redirect logic', () => {
   describe('role home paths', () => {
     it('maps every role to its appropriate home route', () => {
-      expect(getRoleHome('customer')).toBe('/(customer)/(tabs)');
+      expect(getRoleHome('customer')).toBe('/(tabs)');
       expect(getRoleHome('seller')).toBe('/(seller)/home');
       expect(getRoleHome('rider')).toBe('/(rider)/home');
       expect(getRoleHome('admin')).toBe('/(admin)/home');
@@ -27,7 +27,7 @@ describe('roleGuard pure redirect logic', () => {
     });
 
     it('blocks access to protected customer routes and redirects to welcome', () => {
-      expect(resolveRoleRedirect({ role: null, isGuest: false, path: '/(customer)/(tabs)' })).toBe('/(auth)/welcome');
+      expect(resolveRoleRedirect({ role: null, isGuest: false, path: '/(tabs)' })).toBe('/(auth)/welcome');
       expect(resolveRoleRedirect({ role: null, isGuest: false, path: '/(tabs)/account' })).toBe('/(auth)/welcome');
     });
 
@@ -44,7 +44,7 @@ describe('roleGuard pure redirect logic', () => {
 
   describe('guest user', () => {
     it('allows browsing customer tabs and auth screens', () => {
-      expect(resolveRoleRedirect({ role: null, isGuest: true, path: '/(customer)/(tabs)' })).toBeNull();
+      expect(resolveRoleRedirect({ role: null, isGuest: true, path: '/(tabs)' })).toBeNull();
       expect(resolveRoleRedirect({ role: null, isGuest: true, path: '/(tabs)/search' })).toBeNull();
       expect(resolveRoleRedirect({ role: null, isGuest: true, path: '/sellers/12' })).toBeNull();
       expect(resolveRoleRedirect({ role: null, isGuest: true, path: '/(auth)/welcome' })).toBeNull();
@@ -59,19 +59,19 @@ describe('roleGuard pure redirect logic', () => {
 
   describe('authenticated customer', () => {
     it('allows access to customer areas', () => {
-      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(customer)/(tabs)' })).toBeNull();
+      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(tabs)' })).toBeNull();
       expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/sellers/5' })).toBeNull();
     });
 
     it('redirects to customer home if visiting login or welcome', () => {
-      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(auth)/login' })).toBe('/(customer)/(tabs)');
-      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(auth)/welcome' })).toBe('/(customer)/(tabs)');
+      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(auth)/login' })).toBe('/(tabs)');
+      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(auth)/welcome' })).toBe('/(tabs)');
     });
 
     it('blocks customer from accessing seller, rider, and admin areas', () => {
-      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(seller)/home' })).toBe('/(customer)/(tabs)');
-      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(rider)/home' })).toBe('/(customer)/(tabs)');
-      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(admin)/home' })).toBe('/(customer)/(tabs)');
+      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(seller)/home' })).toBe('/(tabs)');
+      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(rider)/home' })).toBe('/(tabs)');
+      expect(resolveRoleRedirect({ role: 'customer', isGuest: false, path: '/(admin)/home' })).toBe('/(tabs)');
     });
   });
 
@@ -82,7 +82,7 @@ describe('roleGuard pure redirect logic', () => {
     });
 
     it('blocks seller from customer, rider, and admin areas', () => {
-      expect(resolveRoleRedirect({ role: 'seller', isGuest: false, path: '/(customer)/(tabs)' })).toBe('/(seller)/home');
+      expect(resolveRoleRedirect({ role: 'seller', isGuest: false, path: '/(tabs)' })).toBe('/(seller)/home');
       expect(resolveRoleRedirect({ role: 'seller', isGuest: false, path: '/(rider)/home' })).toBe('/(seller)/home');
       expect(resolveRoleRedirect({ role: 'seller', isGuest: false, path: '/(admin)/home' })).toBe('/(seller)/home');
     });
@@ -95,7 +95,7 @@ describe('roleGuard pure redirect logic', () => {
     });
 
     it('blocks rider from customer, seller, and admin areas', () => {
-      expect(resolveRoleRedirect({ role: 'rider', isGuest: false, path: '/(customer)/(tabs)' })).toBe('/(rider)/home');
+      expect(resolveRoleRedirect({ role: 'rider', isGuest: false, path: '/(tabs)' })).toBe('/(rider)/home');
       expect(resolveRoleRedirect({ role: 'rider', isGuest: false, path: '/(seller)/home' })).toBe('/(rider)/home');
       expect(resolveRoleRedirect({ role: 'rider', isGuest: false, path: '/(admin)/home' })).toBe('/(rider)/home');
     });
@@ -107,7 +107,7 @@ describe('roleGuard pure redirect logic', () => {
     });
 
     it('blocks admin from customer, seller, and rider areas', () => {
-      expect(resolveRoleRedirect({ role: 'admin', isGuest: false, path: '/(customer)/(tabs)' })).toBe('/(admin)/home');
+      expect(resolveRoleRedirect({ role: 'admin', isGuest: false, path: '/(tabs)' })).toBe('/(admin)/home');
       expect(resolveRoleRedirect({ role: 'admin', isGuest: false, path: '/(seller)/home' })).toBe('/(admin)/home');
       expect(resolveRoleRedirect({ role: 'admin', isGuest: false, path: '/(rider)/home' })).toBe('/(admin)/home');
     });
